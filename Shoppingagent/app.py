@@ -1658,7 +1658,7 @@ def handle_input():
             ai_say("좋아요! 지금까지의 기준을 기반으로 추천을 드릴게요.")
         else:
             ai_say(
-                "Tip! 종종 에이전트가 출력오류로 동일한 질문을 던질 수 있습니다그럴 땐 **'추천해줘'**를 입력해주세요 😊"
+                "Tip! 종종 에이전트가 출력오류로 동일한 질문을 던질 수 있습니다🥲 그럴 땐 **'추천해줘'**를 입력해주세요 😊"
             )
         return
 
@@ -1856,7 +1856,7 @@ def main_chat_interface():
         # summary 외 단계에서는 안내 문구
         if st.session_state.stage != "summary":
             st.info(
-                "수정하실 기준이 있으면 아래 입력창에서 말씀해주세요. 😊 또한 **종종 에이전트가 출력오류로 동일한 질문을 던질 수 있습니다.**\n"
+                "종종 에이전트가 출력오류로 동일한 질문을 던질 수 있습니다.🥲**\n"
                 "그럴 땐 **'추천해줘'**를 입력해주세요!"
             )
         # ------------------------------------------------
@@ -1907,6 +1907,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
