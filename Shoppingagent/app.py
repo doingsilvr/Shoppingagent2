@@ -1818,48 +1818,57 @@ def main_chat_interface():
     
             st.markdown(chat_html, unsafe_allow_html=True)
     
-        # ------------------------------
-        # 🔥 추천 받기 버튼 — summary에서만!
-        # ------------------------------
-        if st.session_state.stage == "summary":
-            if st.button("🔍 이 기준으로 추천 받기"):
-                st.session_state.stage = "comparison"
-                log_event("stage_change", new_value="comparison")
-                st.session_state.recommended_products = make_recommendation()
+    # ------------------------------
+    # 🔥 추천 받기 버튼 — summary에서만!
+    # ------------------------------
+    if st.session_state.stage == "summary":
+        if st.button("🔍 이 기준으로 추천 받기"):
+            st.session_state.stage = "comparison"
+            log_event("stage_change", new_value="comparison")
     
-                prods = st.session_state.recommended_products
-                candidate_names = ",".join([p["name"] for p in prods]) if prods else ""
+            st.session_state.recommended_products = make_recommendation()
+            prods = st.session_state.recommended_products
     
-                log_event("show_candidates", value=candidate_names)
+            candidate_names = ",".join([p["name"] for p in prods]) if prods else ""
+            log_event("show_candidates", value=candidate_names)
     
-                name = st.session_state.nickname
-                mems = st.session_state.memory
+            # 버튼 내부에서는 UI 출력하지 않음
+            st.rerun()
+
+    # ------------------------------
+    # 추천 결과 설명 출력 (버튼 외부에서)
+    # ------------------------------
+    if st.session_state.stage == "comparison":
     
-                ai_say(
-                    f"{name}님 기준에 잘 맞는 후보 3가지를 골라봤어요. "
-                    "아래 카드와 함께, 하나씩 간단히 소개해드릴게요."
-                )
+        name = st.session_state.nickname
+        mems = st.session_state.memory
+        prods = st.session_state.recommended_products
     
-                for idx, p in enumerate(prods, start=1):
-                    reason = generate_personalized_reason(p, mems, name).split("\n")[0]
-                    msg = (
-                        f"{idx}번 후보 **{p['name']}** (약 {p['price']:,}원대)\n"
-                        f"- 주요 특징: {', '.join(p.get('tags', []))}\n"
-                        f"- 왜 어울릴까요? {reason}"
-                    )
-                    ai_say(msg)
+        ai_say(
+            f"{name}님 기준에 잘 맞는 후보 3가지를 골라봤어요. "
+            "아래 카드와 함께, 하나씩 간단히 소개해드릴게요."
+        )
     
-                ai_say(
-                    "각 후보는 아래 카드 형태로도 정리해두었어요. "
-                    "관심 가는 제품의 카드에서 **'자세히 질문하기'** 버튼을 누르시면, "
-                    "그 제품에 대해 제가 채팅으로 더 자세히 안내해드릴게요.\n\n"
-                    "최종적으로 마음에 드는 제품을 고르셨다면, 카드 하단의 "
-                    "**'구매하러 가기'** 버튼을 눌러 구매를 진행하는 상황을 가정해볼게요.\n"
-                    "*구매하러 가기는 자세히 질문하기를 거쳐야만 하단 버튼을 볼 수 있습니다"
-                )
+        for idx, p in enumerate(prods, start=1):
+            reason = generate_personalized_reason(p, mems, name).split("\n")[0]
+            msg = (
+                f"{idx}번 후보 **{p['name']}** (약 {p['price']:,}원대)\n"
+                f"- 주요 특징: {', '.join(p.get('tags', []))}\n"
+                f"- 왜 어울릴까요? {reason}"
+            )
+            ai_say(msg)
     
-                st.rerun()
+        ai_say(
+            "각 후보는 아래 카드 형태로도 정리해두었어요. "
+            "관심 가는 제품의 카드에서 **'자세히 질문하기'** 버튼을 누르시면 "
+            "그 제품에 대해 제가 채팅으로 더 자세히 안내해드릴게요.\n\n"
+            "최종적으로 마음에 드는 제품을 고르셨다면 카드 하단의 "
+            "**'구매하러 가기'** 버튼을 눌러 구매를 진행하는 상황을 가정해볼게요.\n"
+            "*구매하러 가기는 자세히 질문하기를 거쳐야만 하단 버튼을 볼 수 있습니다.*"
+        )
     
+        recommend_products_ui(st.session_state.recommended_products)
+
         # summary 외 단계에서는 안내 문구
         if st.session_state.stage != "summary":
             st.info(
@@ -1914,6 +1923,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
