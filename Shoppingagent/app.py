@@ -272,21 +272,6 @@ st.markdown("""
     div.stButton > button:hover {
         background-color: #1D4ED8 !important;
     }
-    
-    /* 🔵 [메모리 삭제 버튼(X)] 예외 스타일 */
-    div[data-testid="stBlinkContainer"] button {
-        background-color: #ffffff !important;
-        color: #2563EB !important;
-        border: 1px solid #E5E7EB !important;
-        padding: 2px 8px !important;
-        min-height: 0px !important;
-        height: auto !important;
-        margin: 0 !important;
-    }
-    div[data-testid="stBlinkContainer"] button:hover {
-        background-color: #EFF6FF !important;
-        border-color: #2563EB !important;
-    }
 
     /* 🟢 진행바 (가로 배열 + 설명 포함) */
     .progress-container {
@@ -348,11 +333,7 @@ st.markdown("""
     /* 좌측 메모리 패널 스타일 */
     .memory-section-header {
         font-size: 20px; font-weight: 800; margin-top: 0px; margin-bottom: 12px; color: #111; display: flex; align-items: center;
-    }
-    .memory-guide-box {
-        background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;
-        padding: 12px; font-size: 13px; color: #64748B; margin-bottom: 15px;
-        line-height: 1.4;
+
      }       
     .memory-block {
         background: #FFF9D9;  /* 파스텔 연노랑 */
@@ -370,12 +351,6 @@ st.markdown("""
     .memory-text {
         font-weight: 500;
         color: #333333;
-    }
-
-    /* 팁 박스 */
-    .tip-box {
-        background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 12px;
-        padding: 16px; font-size: 12px; color: #92400E; line-height: 1.5; margin-top: 20px;
     }
 
     /* 상품 카드 */
@@ -1190,7 +1165,7 @@ def render_step_header():
 # =========================================================
 def render_memory_sidebar():
 
-    st.markdown("### 🧠 현재 쇼핑 기준")
+    st.markdown("### 🧠 현재 나의 쇼핑 메모리")
 
     # --------------------------
     # 📌 메모리 목록 렌더링 (컨테이너로 감싸기)
@@ -1911,6 +1886,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
