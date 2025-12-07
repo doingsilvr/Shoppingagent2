@@ -892,9 +892,6 @@ def send_product_detail_message(product):
         f"- **평점:** ⭐ {product['rating']:.1f} (리뷰 {product['reviews']}개)\n"
         f"- **주요 특징(태그):** {', '.join(product.get('tags', []))}\n"
         f"- **리뷰 한 줄 요약:** {product.get('review_one', '리뷰 요약 정보가 없습니다.')}\n\n"
-        "🔄 현재 추천 상품이 마음에 들지 않으신가요?\n"
-        "좌측 **쇼핑 메모리**를 수정하시면 추천 후보가 바로 달라질 수 있어요.\n"
-        "예를 들어 예산, 색상, 노이즈캔슬링, 착용감 같은 기준을 바꿔보셔도 좋습니다.(특히 예산, 색상을 변경하면 바뀔 수 있어요.).\n\n"
         "이 제품에 대해 더 궁금한 점이 있으시면 편하게 물어봐 주세요 🙂 (예시 : 부정적 리뷰는 뭐가 있어?, 배터리 성능은 어떨까?) "
     )
     ai_say(detail_text)
@@ -1476,8 +1473,6 @@ def build_summary_from_memory(name, mems):
 
     summary += (
         "현재 말씀해주신 기준만으로도 충분히 추천을 드릴 수 있는 상태예요! 😊\n"
-        "왼쪽의 ‘쇼핑 메모리’에서 기준을 직접 수정하거나 삭제하실 수도 있고,\n"
-        "저에게 편하게 말씀해주셔도 바로 반영해드릴게요.\n\n"
         "준비되셨다면 아래의 **‘이 기준으로 추천 받기’** 버튼을 눌러주세요."
     )
 
@@ -1694,9 +1689,6 @@ def handle_input():
             ss.stage = "comparison"
             ss.recommended_products = make_recommendation()
             ai_say("좋아요! 지금까지의 기준을 기반으로 추천을 드릴게요.")
-        else:
-            ai_say(
-                "수정하고 싶은 기준이 있으면 좌측 '쇼핑 메모리'에서 편하게 변경해주세요 😊"
             )
         return
 
@@ -1892,7 +1884,7 @@ def main_chat_interface():
     
                 st.rerun()
     
-            st.info("수정하실 기준이 있으면 아래 입력창에서 말씀해주세요. 😊")
+            st.info("종종 에이전트가 출력오류로 동일한 질문을 던질 수 있습니다. 그럴 땐 **'추천해줘'**를 입력해주세요!")
 
         # ------------------------------------------------
         # 입력폼
@@ -1942,5 +1934,6 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
