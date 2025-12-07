@@ -36,7 +36,7 @@ def get_gsheet_client():
 # ======================================================
 def log_event(event_type, **kwargs):
     """
-    B_raw 시트에 이벤트 단위 로그 한 줄을 기록.
+    A_raw 시트에 이벤트 단위 로그 한 줄을 기록.
     - event_type: 이벤트 종류 (user_message / memory_add / memory_delete ...)
     - kwargs:
         source="user" | "agent"
@@ -49,7 +49,7 @@ def log_event(event_type, **kwargs):
     entry = {
         "timestamp": time.time(),
         "session_id": st.session_state.get("session_id", "unknown"),
-        "condition": "B",
+        "condition": "A",
         "user_name": st.session_state.get("nickname", ""),
         "phase": st.session_state.get("stage", "unknown"),
         "event_type": event_type,
@@ -78,7 +78,7 @@ def log_event(event_type, **kwargs):
 
     try:
         client = get_gsheet_client()
-        sheet = client.open("shopping_logs").worksheet("B_raw")
+        sheet = client.open("shopping_logs").worksheet("A_raw")
         sheet.append_row(row, value_input_option="RAW")
 
     except Exception as e:
@@ -215,7 +215,7 @@ def ss_init():
     ss.setdefault("priority", "")                   # 실험 준비 단계에서 받아오는 최우선 기준
     ss.setdefault("neg_responses", [
         "없어", "몰라", "글쎄", "아니", "별로", "중요하지 않아",
-        "그만", "그닥", "대충", "흠", "모르겠", "별로", "괜찮"
+        "그만", "대충", "음…", "모르겠", "선호 없음", "괜찮"
     ])
 
 
@@ -226,13 +226,13 @@ ss_init()
 # =========================================================
 
 YES_KEYWORDS = [
-    "응", "응응", "ㅇㅇ", "네", "넹", "맞아", "필요해", "맞아요",
-    "그래", "좋아", "좋아요", "중요하지", "좋지", "그치", "맞지"
+    "응", "응응", "ㅇㅇ", "네", "넹", "맞아", "맞아요",
+    "그래", "좋아", "좋아요", "중요하지", "그치", "맞지"
 ]
 
 NO_KEYWORDS = [
-    "아니", "아니요", "별로", "그닥",
-    "상관없어", "흠", "몰라", "않아", "없어"
+    "아니", "아니요", "별로",
+"상관없어", "음...", "몰라", "없어",
 ]
 # ========================================================
 # 2. CSS 스타일 (기존 UI 완벽 유지)
@@ -552,20 +552,13 @@ def is_negative_response(text: str) -> bool:
         return False
 
     negative_keywords = [
-        # 기준이 없거나 애매함
-        "없어", "없다고", "몰라", "모르겠", "잘 모르",
-        "글쎄", "애매", "딱히",
-
-        # 관심/중요도 낮음
-        "별로", "아닌데", "굳이", "괜찮",
-        "그만", "필요없", "필요 없", "상관없", "관심없", "안중요",
-
-        # 우선순위를 못 정하는 답변 → 더 물어보지 말기
-        "둘다 중요", "둘 다 중요", "둘 다 다 중요", "둘 다 괜찮",
-        "둘다 괜찮", "다 중요해", "둘 다 비슷", "거의 비슷"
+        "없어", "없다고", "몰라", "모르겠", "잘 모르", 
+        "글쎄", "별로", "아닌데", "굳이", "괜찮",
+        "그만", "필요없", "상관없", "안중요", "관심없"
     ]
 
     return any(k in text for k in negative_keywords)
+
 
 def extract_memory_with_gpt(user_input: str, memory_text: str):
     """
@@ -727,7 +720,7 @@ def add_memory(mem_text: str, announce: bool = True):
 
     _after_memory_change()
 
-def delete_memory(index: int, source="agent"):
+def delete_memory(index: int):
     """메모리 삭제"""
     if index < 0 or index >= len(st.session_state.memory):
         return
@@ -899,6 +892,9 @@ def send_product_detail_message(product):
         f"- **평점:** ⭐ {product['rating']:.1f} (리뷰 {product['reviews']}개)\n"
         f"- **주요 특징(태그):** {', '.join(product.get('tags', []))}\n"
         f"- **리뷰 한 줄 요약:** {product.get('review_one', '리뷰 요약 정보가 없습니다.')}\n\n"
+        "🔄 현재 추천 상품이 마음에 들지 않으신가요?\n"
+        "좌측 **쇼핑 메모리**를 수정하시면 추천 후보가 바로 달라질 수 있어요.\n"
+        "예를 들어 예산, 색상, 노이즈캔슬링, 착용감 같은 기준을 바꿔보셔도 좋습니다.(특히 예산, 색상을 변경하면 바뀔 수 있어요.).\n\n"
         "이 제품에 대해 더 궁금한 점이 있으시면 편하게 물어봐 주세요 🙂 (예시 : 부정적 리뷰는 뭐가 있어?, 배터리 성능은 어떨까?) "
     )
     ai_say(detail_text)
@@ -1191,38 +1187,72 @@ def render_step_header():
     """
     st.markdown(step_items, unsafe_allow_html=True)
 
+
 # =========================================================
-# 12. 좌측 메모리 패널 (B 조건: 보기만 가능)
+# 12. 좌측 메모리 패널
 # =========================================================
 def render_memory_sidebar():
-    st.markdown("### 🧠 현재 나의 쇼핑 메모리")
 
-    # 메모리 목록 표시
+    st.markdown("### 🧠 현재 쇼핑 기준")
+
+    # --------------------------
+    # 📌 메모리 목록 렌더링 (컨테이너로 감싸기)
+    # --------------------------
     mem_container = st.container()
     with mem_container:
-        for mem in st.session_state.memory:
-            st.markdown(
-                f"""
-                <div class='memory-block'>
-                    <div class='memory-text'>{mem}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        for i, mem in enumerate(st.session_state.memory):
+            c1, c2 = st.columns([8, 2])
 
-    # 구분선
+            with c1:
+                st.markdown(
+                    f"""
+                    <div class='memory-block'>
+                        <div class='memory-text'>{mem}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            with c2:
+                # ❌ 여기서는 st.rerun() 사용 안 함
+                if st.button("X", key=f"delete_mem_{i}"):
+                    # delete_memory 안에서 log_event 호출 + 상태 정리
+                    delete_memory(i)
+                    # 👉 여기서 굳이 st.rerun()을 부르면
+                    #    프론트에서 노드 구조가 꼬여서 removeChild 에러가 나기 쉬움
+
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # B 조건 안내 문구
-    st.markdown(
-        """
-        <div style='font-size:13px; color:#6b7280; line-height:1.4;'>
-            ※ 쇼핑에이전트 쇼파가 당신에 대해 기억하고 있는 메모리 리스트입니다.".
-        </div>
-        """,
-        unsafe_allow_html=True
+    # --------------------------
+    # 📌 수동 메모리 추가 UI
+    # --------------------------
+    st.markdown("**✏️ 직접 기준 추가하기**")
+
+    new_mem = st.text_input(
+        "추가할 기준",
+        key="manual_memory_add",
+        placeholder="예: 오래 써도 귀가 편하면 좋겠어요"
     )
-    
+
+    # 여기서도 st.rerun() 제거
+    if st.button("메모리 추가하기"):
+        if new_mem.strip():
+            # 사용자 직접 추가라는 걸 로그에 남기고
+            log_event(
+                "memory_add",
+                source="user",
+                new_value=new_mem.strip(),
+                memory_count=len(st.session_state.memory)
+            )
+
+            # 실제 메모리 추가 (안쪽에서 다시 log_event 호출하더라도 OK)
+            add_memory(new_mem.strip())
+
+            st.success("추가했어요!")
+
+# =========================================================
+# 13. 추천 UI (3개 카드)
+# =========================================================
 # ============================================================
 # 상품 상세 메시지 생성
 # ============================================================
@@ -1273,7 +1303,7 @@ def inject_card_css():
 # ============================================================
 import html
 
-def recommend_products_ui():
+def recommend_products_ui(name, mems):
     products = st.session_state.recommended_products
 
     if not products:
@@ -1283,8 +1313,8 @@ def recommend_products_ui():
     st.markdown("### 🔍 고객님을 위한 후보들을 비교해보세요!")
     st.markdown(
         "<p style='margin-top:-10px; color:#4B5563;'>"
-        "1) ‘자세히 질문하기’를 눌러 각 후보에 대해 자유롭게 물어보실 수 있어요.(예 : 부정적인 리뷰는 어때?)<br>"
-        "2) 어느 정도 후보가 추려지면 아래의 ‘구매하러 가기’를 눌러주세요! (1번을 수행해야 진행 가능)"
+        "1) ‘자세히 질문하기’를 눌러 각 후보에 대해 자유롭게 물어보실 수 있어요.(예 : 부정적인 리뷰는 어때? )<br>"
+        "2) 어느 정도 후보가 추려지면 아래의 ‘구매하러 가기’를 눌러주세요!(1번을 수행해야 진행 가능)"
         "</p>",
         unsafe_allow_html=True,
     )
@@ -1446,7 +1476,8 @@ def build_summary_from_memory(name, mems):
 
     summary += (
         "현재 말씀해주신 기준만으로도 충분히 추천을 드릴 수 있는 상태예요! 😊\n"
-        "왼쪽의 ‘쇼핑 메모리’를 바탕으로 추천에 구체적으로 반영해드릴게요.\n\n"
+        "왼쪽의 ‘쇼핑 메모리’에서 기준을 직접 수정하거나 삭제하실 수도 있고,\n"
+        "저에게 편하게 말씀해주셔도 바로 반영해드릴게요.\n\n"
         "준비되셨다면 아래의 **‘이 기준으로 추천 받기’** 버튼을 눌러주세요."
     )
 
@@ -1665,7 +1696,7 @@ def handle_input():
             ai_say("좋아요! 지금까지의 기준을 기반으로 추천을 드릴게요.")
         else:
             ai_say(
-                "Tip! 종종 에이전트가 출력오류로 동일한 질문을 던질 수 있습니다🥲 그럴 땐 **'추천해줘'**를 입력해주세요 😊"
+                "수정하고 싶은 기준이 있으면 좌측 '쇼핑 메모리'에서 편하게 변경해주세요 😊"
             )
         return
 
@@ -1791,90 +1822,78 @@ def main_chat_interface():
         render_memory_sidebar()
 
     with col2:
-    
+
         # ---------------------------
-        # 📌 채팅창 렌더링
+        # 📌 채팅창 렌더링 (★ 패치본)
         # ---------------------------
         chat_container = st.container()
         with chat_container:
-    
+
             chat_html = "<div class='chat-display-area'>"
-    
+
+            # ✓ 기존 메시지 출력
             for msg in st.session_state.messages:
                 safe = html.escape(msg["content"]).replace("\n", "<br>")
                 role = msg["role"]
-    
+
                 if role == "assistant":
                     chat_html += f"<div class='chat-bubble chat-bubble-ai'>{safe}</div>"
                 else:
                     chat_html += f"<div class='chat-bubble chat-bubble-user'>{safe}</div>"
-    
-            # summary면 요약도 말풍선으로 추가
+
+            # ✓ summary 단계라면 요약 말풍선 추가
             if st.session_state.stage == "summary":
                 summary_html = html.escape(st.session_state.summary_text).replace("\n", "<br>")
                 chat_html += f"<div class='chat-bubble chat-bubble-ai'>{summary_html}</div>"
-    
-            chat_html += "</div>"
-    
+
+            chat_html += "</div>"  # chat-display-area 끝
+
             st.markdown(chat_html, unsafe_allow_html=True)
     
-    # ------------------------------
-    # 🔥 추천 받기 버튼 — summary에서만!
-    # ------------------------------
-    if st.session_state.stage == "summary":
-        if st.button("🔍 이 기준으로 추천 받기"):
-            st.session_state.stage = "comparison"
-            log_event("stage_change", new_value="comparison")
+            # ------------------------------
+            # 추천 받기 버튼
+            # ------------------------------
+            if st.button("🔍 이 기준으로 추천 받기"):
+                st.session_state.stage = "comparison"
+                log_event("stage_change", new_value="comparison")
+                st.session_state.recommended_products = make_recommendation()
     
-            st.session_state.recommended_products = make_recommendation()
-            prods = st.session_state.recommended_products
+                prods = st.session_state.recommended_products
+                candidate_names = ",".join([p["name"] for p in prods]) if prods else ""
     
-            candidate_names = ",".join([p["name"] for p in prods]) if prods else ""
-            log_event("show_candidates", value=candidate_names)
+                log_event("show_candidates", value=candidate_names)
     
-            # 버튼 내부에서는 UI 출력하지 않음
-            st.rerun()
+                name = st.session_state.nickname
+                mems = st.session_state.memory
+    
+                # 안내 메시지
+                ai_say(
+                    f"{name}님 기준에 잘 맞는 후보 3가지를 골라봤어요. "
+                    "아래 카드와 함께, 하나씩 간단히 소개해드릴게요."
+                )
+    
+                for idx, p in enumerate(prods, start=1):
+                    reason = generate_personalized_reason(p, mems, name).split("\n")[0]
+                    msg = (
+                        f"{idx}번 후보 **{p['name']}** (약 {p['price']:,}원대)\n"
+                        f"- 주요 특징: {', '.join(p.get('tags', []))}\n"
+                        f"- 왜 어울릴까요? {reason}"
+                    )
+                    ai_say(msg)
+    
+                ai_say(
+                    "각 후보는 아래 카드 형태로도 정리해두었어요. "
+                    "관심 가는 제품의 카드에서 **'자세히 질문하기'** 버튼을 누르시면, "
+                    "그 제품에 대해 제가 채팅으로 더 자세히 안내해드릴게요.\n\n"
+                    "최종적으로 마음에 드는 제품을 고르셨다면, 카드 하단의 "
+                    "**'구매하러 가기'** 버튼을 눌러 구매를 진행하는 상황을 가정해볼게요.\n"
+                    "*구매하러 가기는 자세히 질문하기를 거쳐야만 하단 버튼을 볼 수 있습니다"
+                )
+    
+                st.rerun()
+    
+            st.info("수정하실 기준이 있으면 아래 입력창에서 말씀해주세요. 😊")
 
-    # ------------------------------
-    # 추천 결과 설명 출력 (버튼 외부에서)
-    # ------------------------------
-    if st.session_state.stage == "comparison":
-    
-        name = st.session_state.nickname
-        mems = st.session_state.memory
-        prods = st.session_state.recommended_products
-    
-        ai_say(
-            f"{name}님 기준에 잘 맞는 후보 3가지를 골라봤어요. "
-            "아래 카드와 함께, 하나씩 간단히 소개해드릴게요."
-        )
-    
-        for idx, p in enumerate(prods, start=1):
-            reason = generate_personalized_reason(p, mems, name).split("\n")[0]
-            msg = (
-                f"{idx}번 후보 **{p['name']}** (약 {p['price']:,}원대)\n"
-                f"- 주요 특징: {', '.join(p.get('tags', []))}\n"
-                f"- 왜 어울릴까요? {reason}"
-            )
-            ai_say(msg)
-    
-        ai_say(
-            "각 후보는 아래 카드 형태로도 정리해두었어요. "
-            "관심 가는 제품의 카드에서 **'자세히 질문하기'** 버튼을 누르시면 "
-            "그 제품에 대해 제가 채팅으로 더 자세히 안내해드릴게요.\n\n"
-            "최종적으로 마음에 드는 제품을 고르셨다면 카드 하단의 "
-            "**'구매하러 가기'** 버튼을 눌러 구매를 진행하는 상황을 가정해볼게요.\n"
-            "*구매하러 가기는 자세히 질문하기를 거쳐야만 하단 버튼을 볼 수 있습니다.*"
-        )
-    
-        recommend_products_ui()
-
-        # summary 외 단계에서는 안내 문구
-        if st.session_state.stage != "summary":
-            st.info(
-                "종종 에이전트가 출력오류로 동일한 질문을 던질 수 있습니다.🥲**\n"
-                "그럴 땐 **'추천해줘'**를 입력해주세요!"
-            )
         # ------------------------------------------------
         # 입력폼
         # ------------------------------------------------
@@ -1906,7 +1925,7 @@ def main_chat_interface():
                         st.session_state.selected_product = None
                         st.rerun()
     
-            recommend_products_ui()
+            recommend_products_ui(st.session_state.nickname, st.session_state.memory)
 
         # ------------------------------------------------
         # 구매 결정 단계 완성 표시
@@ -1923,28 +1942,5 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
