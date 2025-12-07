@@ -1214,7 +1214,7 @@ def render_memory_sidebar():
     # B 조건에서는 추가/삭제 비활성
     st.markdown(
         "<div style='font-size:13px; color:#6b7280;'>"
-        "※ B 조건에서는 메모리는 보이기만 하며, 직접 수정할 수 없습니다."
+        "※ 쇼핑에이전트 쇼파가 당신에 대해 기억하고 있는 메모리 리스트입니다."
         "</div>",
         unsafe_allow_html=True,
     )
@@ -1911,6 +1911,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
