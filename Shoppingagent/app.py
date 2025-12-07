@@ -1191,29 +1191,36 @@ def render_step_header():
     """
     st.markdown(step_items, unsafe_allow_html=True)
 
-
 # =========================================================
-# 12. 좌측 메모리 패널
+# 12. 좌측 메모리 패널 (B 조건: 보기만 가능)
 # =========================================================
 def render_memory_sidebar():
-    st.markdown("### 🧠 나의 쇼핑 메모리 리스트")
+    st.markdown("### 🧠 현재 나의 쇼핑 메모리")
 
+    # 메모리 목록 표시
     mem_container = st.container()
     with mem_container:
-        for i, mem in enumerate(st.session_state.memory):
+        for mem in st.session_state.memory:
             st.markdown(
-                f"<div class='memory-block'><div class='memory-text'>{mem}</div></div>",
+                f"""
+                <div class='memory-block'>
+                    <div class='memory-text'>{mem}</div>
+                </div>
+                """,
                 unsafe_allow_html=True
             )
 
+    # 구분선
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # B 조건에서는 추가/삭제 비활성
+    # B 조건 안내 문구
     st.markdown(
-        "<div style='font-size:13px; color:#6b7280;'>"
-        "※ 쇼핑에이전트 쇼파가 당신에 대해 기억하고 있는 메모리 리스트입니다."
-        "</div>",
-        unsafe_allow_html=True,
+        """
+        <div style='font-size:13px; color:#6b7280; line-height:1.4;'>
+            ※ 쇼핑에이전트 쇼파가 당신에 대해 기억하고 있는 메모리 리스트입니다.".
+        </div>
+        """,
+        unsafe_allow_html=True
     )
     
 # ============================================================
@@ -1907,6 +1914,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
