@@ -1,32 +1,23 @@
-import re
-import streamlit as st
-import time
-import html
-import json
-from openai import OpenAI
 from google.oauth2.service_account import Credentials
 import gspread
-import uuid
 
-# ======================================================
-# 0) Google Sheets 인증 (Secret 기반)
-# ======================================================
 def get_gsheet_client():
     """
-    Streamlit Cloud에서 JSON 파일 없이 인증하는 함수
-    secrets.toml → [gcp_service_account] 블록 사용
+    Streamlit Cloud에서 secrets.toml의 gcp_service_account 블록 기반 인증.
+    oauth2client 사용 금지.
     """
-
     service_json = st.secrets["gcp_service_account"]
 
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(
-        dict(service_json),
+    creds = Credentials.from_service_account_info(
+        service_json,
         scopes=[
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive",
-        ]
+        ],
     )
-    return gspread.authorize(creds)
+
+    client = gspread.authorize(creds)
+    return client
 
 # ======================================================
 # 1) 이벤트 단위 로그 기록 (B_raw) — 최종 안정 버전
@@ -1949,6 +1940,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
