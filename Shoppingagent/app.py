@@ -1218,24 +1218,6 @@ def render_memory_sidebar():
         unsafe_allow_html=True,
     )
     
-            # 1) 로그 기록
-            log_event(
-                "memory_add",
-                source="user",
-                new_value=new_mem.strip(),
-                memory_count=len(st.session_state.memory)
-            )
-            # 2) 메모리 추가
-            # 이 함수 안에서 notification_message를 세팅해주므로 
-            # 별도로 st.success를 쓸 필요가 없습니다.
-            add_memory(new_mem.strip()) 
-            
-            # 3) 새로고침 (입력창 비우고 목록 갱신 + Toast 알림 표시)
-            st.rerun()
-
-# =========================================================
-# 13. 추천 UI (3개 카드)
-# =========================================================
 # ============================================================
 # 상품 상세 메시지 생성
 # ============================================================
@@ -1928,6 +1910,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
