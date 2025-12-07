@@ -1867,7 +1867,7 @@ def main_chat_interface():
             "*구매하러 가기는 자세히 질문하기를 거쳐야만 하단 버튼을 볼 수 있습니다.*"
         )
     
-        recommend_products_ui(st.session_state.recommended_products)
+        recommend_products_ui()
 
         # summary 외 단계에서는 안내 문구
         if st.session_state.stage != "summary":
@@ -1906,7 +1906,7 @@ def main_chat_interface():
                         st.session_state.selected_product = None
                         st.rerun()
     
-            recommend_products_ui(st.session_state.nickname, st.session_state.memory)
+            recommend_products_ui()
 
         # ------------------------------------------------
         # 구매 결정 단계 완성 표시
@@ -1923,6 +1923,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
