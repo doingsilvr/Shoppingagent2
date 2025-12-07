@@ -1198,50 +1198,26 @@ def render_step_header():
 # 12. 좌측 메모리 패널
 # =========================================================
 def render_memory_sidebar():
-    st.markdown("### 🧠 현재 나의 쇼핑 메모리")       
-    
-    # --------------------------
-    # [1] 삭제 콜백 (에러 방지 핵심)
-    # --------------------------
-    def on_delete_click(index):
-        # 삭제 후에는 자동으로 delete_memory 안에서 로그도 남기고
-        # notification_message도 설정됩니다.
-        delete_memory(index, source="user")
+    st.markdown("### 🧠 현재 나의 쇼핑 메모리")
 
     mem_container = st.container()
     with mem_container:
         for i, mem in enumerate(st.session_state.memory):
-            c1, c2 = st.columns([8, 2])
-            with c1:
-                st.markdown(
-                    f"<div class='memory-block'><div class='memory-text'>{mem}</div></div>",
-                    unsafe_allow_html=True
-                )
-            with c2:
-                # key에 hash값 추가로 충돌 방지
-                st.button(
-                    "X", 
-                    key=f"delete_btn_{i}_{hash(mem)}", 
-                    on_click=on_delete_click, 
-                    args=(i,)
-                )
+            st.markdown(
+                f"<div class='memory-block'><div class='memory-text'>{mem}</div></div>",
+                unsafe_allow_html=True
+            )
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --------------------------
-    # [2] 추가 폼 (엔터키 입력 지원)
-    # --------------------------
-    st.markdown("**✏️ 직접 기준 추가하기**")
-
-    with st.form(key="add_mem_form", clear_on_submit=True):
-        new_mem = st.text_input(
-            "추가할 기준",
-            placeholder="예: 오래 써도 귀가 편하면 좋겠어요",
-            label_visibility="collapsed"
-        )
-        submit = st.form_submit_button("메모리 추가하기")
-        
-        if submit and new_mem.strip():
+    # B 조건에서는 추가/삭제 비활성
+    st.markdown(
+        "<div style='font-size:13px; color:#6b7280;'>"
+        "※ B 조건에서는 메모리는 보이기만 하며, 직접 수정할 수 없습니다."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+    
             # 1) 로그 기록
             log_event(
                 "memory_add",
@@ -1952,6 +1928,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
