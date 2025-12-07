@@ -1199,7 +1199,7 @@ def render_step_header():
 # 12. 좌측 메모리 패널
 # =========================================================
 def render_memory_sidebar():
-    st.markdown("### 🧠 현재 나의 쇼핑 메모리")
+    st.markdown("### 🧠 나의 쇼핑 메모리 리스트")
 
     mem_container = st.container()
     with mem_container:
@@ -1911,6 +1911,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
