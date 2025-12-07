@@ -4,8 +4,8 @@ import time
 import html
 import json
 from openai import OpenAI
-from google.oauth2.service_account import Credentials
 import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import uuid
 
 # ======================================================
@@ -29,11 +29,11 @@ def get_gsheet_client():
     return gspread.authorize(creds)
 
 # ======================================================
-# 1) 이벤트 단위 로그 기록 (A_raw) — 최종 안정 버전
+# 1) 이벤트 단위 로그 기록 (B_raw) — 최종 안정 버전
 # ======================================================
 def log_event(event_type, **kwargs):
     """
-    A_raw 시트에 이벤트 단위 로그 한 줄을 기록.
+    B_raw 시트에 이벤트 단위 로그 한 줄을 기록.
     - event_type: 이벤트 종류 (user_message / memory_add / memory_delete ...)
     - kwargs:
         source="user" | "agent"
@@ -46,7 +46,7 @@ def log_event(event_type, **kwargs):
     entry = {
         "timestamp": time.time(),
         "session_id": st.session_state.get("session_id", "unknown"),
-        "condition": "A",
+        "condition": "B",
         "user_name": st.session_state.get("nickname", ""),
         "phase": st.session_state.get("stage", "unknown"),
         "event_type": event_type,
@@ -75,7 +75,7 @@ def log_event(event_type, **kwargs):
 
     try:
         client = get_gsheet_client()
-        sheet = client.open("shopping_logs").worksheet("A_raw")
+        sheet = client.open("shopping_logs").worksheet("B_raw")
         sheet.append_row(row, value_input_option="RAW")
 
     except Exception as e:
@@ -1949,6 +1949,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
