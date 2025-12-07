@@ -1,0 +1,5 @@
+streamlit
+openai>=1.44.0
+st-gsheets-connection
+pandas
+
