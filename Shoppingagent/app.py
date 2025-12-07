@@ -1918,33 +1918,35 @@ def main_chat_interface():
                     st.rerun()
 
         # ------------------------------------------------
-        # 추천 / 상세 / 구매 단계 (카드 영역)
+        # 추천 카드 렌더링 — comparison 단계에서만!
         # ------------------------------------------------
-        if st.session_state.stage in ["comparison", "product_detail", "purchase_decision"]:
+        if st.session_state.stage == "comparison":
             st.markdown("---")
-
-            if st.session_state.stage == "product_detail":
-                c1, c2 = st.columns([1, 4])
-                with c1:
-                    if st.button("목록으로(⬅️)"):
-                        st.session_state.stage = "comparison"
-                        st.session_state.selected_product = None
-                        st.rerun()
-
-            # 🔥 여기서만 recommend_products_ui 호출 (2개 인자)
             recommend_products_ui(st.session_state.nickname, st.session_state.memory)
-
+        
         # ------------------------------------------------
-        # 구매 결정 단계 완성 표시
+        # 제품 상세 단계
         # ------------------------------------------------
-        if st.session_state.stage == "purchase_decision" and st.session_state.final_choice:
+        elif st.session_state.stage == "product_detail":
+            st.markdown("---")
+            c1, _ = st.columns([1, 4])
+            with c1:
+                if st.button("⬅️ 목록으로"):
+                    st.session_state.stage = "comparison"
+                    st.session_state.selected_product = None
+                    st.rerun()
+        
+        # ------------------------------------------------
+        # 구매 결정 단계
+        # ------------------------------------------------
+        elif st.session_state.stage == "purchase_decision" and st.session_state.final_choice:
             p = st.session_state.final_choice
             st.success(
                 f"🎉 **{p['name']}** 구매를 결정하셨습니다! "
                 "이제 실험이 끝났습니다. 설문으로 돌아가주세요!"
             )
             st.balloons()
-    
+            
 # =========================================================
 # 19. 라우팅
 # =========================================================
@@ -1952,5 +1954,6 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
