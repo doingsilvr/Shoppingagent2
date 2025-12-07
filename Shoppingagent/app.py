@@ -1867,7 +1867,9 @@ def main_chat_interface():
                     st.session_state.stage = "comparison"
                     st.session_state.selected_product = None
                     st.rerun()
-        
+                    
+            # 🔥 카드 UI는 product_detail에서도 계속 보여줘야 함
+            recommend_products_ui(st.session_state.nickname, st.session_state.memory)
         # ------------------------------------------------
         # 구매 결정 단계
         # ------------------------------------------------
@@ -1886,6 +1888,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
