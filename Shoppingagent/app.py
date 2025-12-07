@@ -1319,7 +1319,7 @@ def recommend_products_ui(name, mems):
         unsafe_allow_html=True,
     )
 
-    # CSS
+    # 카드용 CSS
     st.markdown("""
         <style>
         .product-card {
@@ -1342,10 +1342,9 @@ def recommend_products_ui(name, mems):
 
     for idx, p in enumerate(products):
         with cols[idx]:
-
             is_sel = (
-                st.session_state.selected_product is not None and
-                st.session_state.selected_product["name"] == p["name"]
+                st.session_state.selected_product is not None
+                and st.session_state.selected_product["name"] == p["name"]
             )
 
             border = "#2563EB" if is_sel else "#e5e7eb"
@@ -1356,19 +1355,22 @@ def recommend_products_ui(name, mems):
                 if is_sel else ""
             )
 
-            # ------- 여기! 한 줄씩 더하기 방식으로 변경 -------
             html_parts = []
-
             html_parts.append(f'<div class="product-card" style="border:2px solid {border};">')
 
             if badge:
                 html_parts.append(badge)
 
             html_parts.append(f'<img src="{p["img"]}" class="product-img">')
-
-            html_parts.append(f'<div style="font-weight:700; font-size:15px;">{p["name"]}</div>')
-            html_parts.append(f'<div style="color:#2563EB; font-weight:600;">{p["price"]:,}원</div>')
-            html_parts.append(f'<div style="font-size:13px; color:#6b7280;">⭐ {p["rating"]:.1f} / 리뷰 {p["reviews"]}</div>')
+            html_parts.append(
+                f'<div style="font-weight:700; font-size:15px;">{p["name"]}</div>'
+            )
+            html_parts.append(
+                f'<div style="color:#2563EB; font-weight:600;">{p["price"]:,}원</div>'
+            )
+            html_parts.append(
+                f'<div style="font-size:13px; color:#6b7280;">⭐ {p["rating"]:.1f} / 리뷰 {p["reviews"]}</div>'
+            )
 
             html_parts.append(
                 '<div style="margin-top:10px; font-size:13px; color:#4b5563;">'
@@ -1377,8 +1379,6 @@ def recommend_products_ui(name, mems):
             )
 
             html_parts.append('</div>')
-
-            # 👉 문자열을 join 해서 한 줄 HTML로 만듦 → 절대 깨지지 않음
             card_html = "".join(html_parts)
 
             st.markdown(card_html, unsafe_allow_html=True)
@@ -1388,7 +1388,7 @@ def recommend_products_ui(name, mems):
                     "product_detail_enter",
                     value=p["name"],
                     index=idx,
-                    memory_count=len(st.session_state.memory)  # ⭐ 중요
+                    memory_count=len(st.session_state.memory)
                 )
                 
                 st.session_state.selected_product = p
@@ -1422,16 +1422,20 @@ def recommend_products_ui(name, mems):
             # 🔥 최종 결정 로그
             log_event("final_decision", value=p["name"])
         
-            # summary가 아직 안 작성되었을 때만 실행 🔥
+            # summary가 아직 안 작성되었을 때만 실행
             if not st.session_state.summary_written:
-                success = write_session_summary()   # ← 성공(True) / 실패(False) 반환하도록 수정
+                success = write_session_summary()
                 st.session_state.summary_written = success
                                  
-            ai_say(f"좋습니다! **'{p['name']}'**(으)로 결정하셨군요! 이제 모든 실험이 끝났습니다. 설문페이지로 돌아가주세요:).")
+            ai_say(
+                f"좋습니다! **'{p['name']}'**(으)로 결정하셨군요! "
+                "이제 모든 실험이 끝났습니다. 설문페이지로 돌아가주세요:)."
+            )
             st.rerun()
 
     else:
         st.info("한 제품을 자세히 보고 싶으시면 위 카드 중 하나를 선택해 질문해주세요. 😊")
+
 
 # =========================================================
 # 14. 요약 생성 함수
@@ -1789,9 +1793,6 @@ def context_setting_page():
             st.session_state.page = "chat"
             st.rerun()
             
-# =========================================================
-# 18. main_chat_interface (UI 그대로 사용)
-# =========================================================
 def main_chat_interface():
 
     # 🔒 안전 가드 — 세션이 완전 초기화되기 전에 호출될 때 에러 방지
@@ -1810,7 +1811,8 @@ def main_chat_interface():
     if len(st.session_state.messages) == 0:
         ai_say(
             f"안녕하세요 {st.session_state.nickname}님! 😊 저는 당신의 AI 쇼핑 도우미예요.\n"
-            f"블루투스 헤드셋을 추천해달라고 하셨으니, 이와 관련해 {st.session_state.nickname}님에 대해 더 파악해볼게요. 주로 어떤 용도로 헤드셋을 사용하실 예정인가요?"
+            f"블루투스 헤드셋을 추천해달라고 하셨으니, 이와 관련해 {st.session_state.nickname}님에 대해 더 파악해볼게요. "
+            "주로 어떤 용도로 헤드셋을 사용하실 예정인가요?"
         )
 
     # 상단 UI
@@ -1818,20 +1820,23 @@ def main_chat_interface():
 
     col1, col2 = st.columns([3, 7], gap="large")
 
+    # ----------------------------
+    # 좌측: 메모리 패널
+    # ----------------------------
     with col1:
         render_memory_sidebar()
 
+    # ----------------------------
+    # 우측: 채팅 + 버튼 + 카드
+    # ----------------------------
     with col2:
-
         # ---------------------------
-        # 📌 채팅창 렌더링 (★ 패치본)
+        # 📌 채팅창 렌더링
         # ---------------------------
         chat_container = st.container()
         with chat_container:
-
             chat_html = "<div class='chat-display-area'>"
 
-            # ✓ 기존 메시지 출력
             for msg in st.session_state.messages:
                 safe = html.escape(msg["content"]).replace("\n", "<br>")
                 role = msg["role"]
@@ -1841,37 +1846,37 @@ def main_chat_interface():
                 else:
                     chat_html += f"<div class='chat-bubble chat-bubble-user'>{safe}</div>"
 
-            # ✓ summary 단계라면 요약 말풍선 추가
+            # summary면 요약도 말풍선으로 추가
             if st.session_state.stage == "summary":
                 summary_html = html.escape(st.session_state.summary_text).replace("\n", "<br>")
                 chat_html += f"<div class='chat-bubble chat-bubble-ai'>{summary_html}</div>"
 
-            chat_html += "</div>"  # chat-display-area 끝
-
+            chat_html += "</div>"
             st.markdown(chat_html, unsafe_allow_html=True)
-    
-            # ------------------------------
-            # 추천 받기 버튼
-            # ------------------------------
+
+        # ------------------------------
+        # 🔥 추천 받기 버튼 — summary에서만!
+        # ------------------------------
+        if st.session_state.stage == "summary":
             if st.button("🔍 이 기준으로 추천 받기"):
                 st.session_state.stage = "comparison"
                 log_event("stage_change", new_value="comparison")
+
                 st.session_state.recommended_products = make_recommendation()
-    
                 prods = st.session_state.recommended_products
+
                 candidate_names = ",".join([p["name"] for p in prods]) if prods else ""
-    
                 log_event("show_candidates", value=candidate_names)
-    
+
                 name = st.session_state.nickname
                 mems = st.session_state.memory
-    
-                # 안내 메시지
+
+                # 안내 메시지들
                 ai_say(
                     f"{name}님 기준에 잘 맞는 후보 3가지를 골라봤어요. "
                     "아래 카드와 함께, 하나씩 간단히 소개해드릴게요."
                 )
-    
+
                 for idx, p in enumerate(prods, start=1):
                     reason = generate_personalized_reason(p, mems, name).split("\n")[0]
                     msg = (
@@ -1880,18 +1885,19 @@ def main_chat_interface():
                         f"- 왜 어울릴까요? {reason}"
                     )
                     ai_say(msg)
-    
+
                 ai_say(
                     "각 후보는 아래 카드 형태로도 정리해두었어요. "
                     "관심 가는 제품의 카드에서 **'자세히 질문하기'** 버튼을 누르시면, "
                     "그 제품에 대해 제가 채팅으로 더 자세히 안내해드릴게요.\n\n"
                     "최종적으로 마음에 드는 제품을 고르셨다면, 카드 하단의 "
                     "**'구매하러 가기'** 버튼을 눌러 구매를 진행하는 상황을 가정해볼게요.\n"
-                    "*구매하러 가기는 자세히 질문하기를 거쳐야만 하단 버튼을 볼 수 있습니다"
+                    "*구매하러 가기는 자세히 질문하기를 거쳐야만 하단 버튼을 볼 수 있습니다*"
                 )
-    
+
                 st.rerun()
-    
+        else:
+            # explore / comparison / product_detail / purchase_decision 단계 안내
             st.info("수정하실 기준이 있으면 아래 입력창에서 말씀해주세요. 😊")
 
         # ------------------------------------------------
@@ -1912,11 +1918,11 @@ def main_chat_interface():
                     st.rerun()
 
         # ------------------------------------------------
-        # 추천 / 상세 / 구매 단계  ← 반드시 SUMMARY 블록과 같은 깊이여야 함
+        # 추천 / 상세 / 구매 단계 (카드 영역)
         # ------------------------------------------------
         if st.session_state.stage in ["comparison", "product_detail", "purchase_decision"]:
             st.markdown("---")
-    
+
             if st.session_state.stage == "product_detail":
                 c1, c2 = st.columns([1, 4])
                 with c1:
@@ -1924,7 +1930,8 @@ def main_chat_interface():
                         st.session_state.stage = "comparison"
                         st.session_state.selected_product = None
                         st.rerun()
-    
+
+            # 🔥 여기서만 recommend_products_ui 호출 (2개 인자)
             recommend_products_ui(st.session_state.nickname, st.session_state.memory)
 
         # ------------------------------------------------
@@ -1932,9 +1939,12 @@ def main_chat_interface():
         # ------------------------------------------------
         if st.session_state.stage == "purchase_decision" and st.session_state.final_choice:
             p = st.session_state.final_choice
-            st.success(f"🎉 **{p['name']}** 구매를 결정하셨습니다! 이제 실험이 끝났습니다. 설문으로 돌아가주세요!")
+            st.success(
+                f"🎉 **{p['name']}** 구매를 결정하셨습니다! "
+                "이제 실험이 끝났습니다. 설문으로 돌아가주세요!"
+            )
             st.balloons()
-
+    
 # =========================================================
 # 19. 라우팅
 # =========================================================
@@ -1942,4 +1952,5 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
