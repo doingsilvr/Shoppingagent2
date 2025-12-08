@@ -1341,7 +1341,7 @@ def recommend_products_ui(name, mems):
             <div style="margin-top:15px; padding:12px 16px; background:#ECF5FF;
             border-radius:12px; font-size:15px; border:1px solid #cfe1ff;">
                 ✔ <b>{p['name']}</b> 제품을 선택하셨어요.
-                궁금한 점을 채팅을 통해 질문하실 수 있으며, 마음을 정하셨다면 아래 버튼으로 최종 결정을 진행할 수 있어요.
+                궁금한 점을 채팅을 통해 질문하실 수 있으며, 마음을 정하셨다면 아래 버튼으로 현재 선택된 상품으로 최종 결정을 진행할 수 있어요.
             </div>
             """,
             unsafe_allow_html=True
@@ -1886,6 +1886,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
