@@ -206,7 +206,7 @@ def ss_init():
     ss.setdefault("turn_count", 0)
     ss.setdefault("logs", [])
     ss.setdefault("session_id", str(uuid.uuid4()))
-    ss.setdefault("condition", "A")  # 나중에 B로 변경 가능
+    ss.setdefault("condition", "B")  # 나중에 B로 변경 가능
     ss.setdefault("summary_written", False)
 
     # 🔥 추가된 핵심 상태값들 — 여기부터 추가
@@ -1885,6 +1885,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
