@@ -1687,7 +1687,7 @@ def context_setting_page():
         # -----------------------
         # 저장 버튼
         # -----------------------
-        if st.button("쇼핑 시작하기(여러번 클릭)", type="primary", use_container_width=True):
+        if st.button("쇼핑 시작하기(여러번 연속으로 클릭!!)", type="primary", use_container_width=True):
             if not name:
                 st.warning("이름을 입력해주세요.")
                 return
@@ -1885,6 +1885,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
