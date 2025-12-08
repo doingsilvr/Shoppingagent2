@@ -1185,8 +1185,6 @@ def render_memory_sidebar():
                     unsafe_allow_html=True
                 )
 
-    st.markdown(f"<div class='memory-item readonly'>{mem}</div>", unsafe_allow_html=True)
-
 # ============================================================
 # 상품 상세 메시지 생성
 # ============================================================
@@ -1888,6 +1886,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
