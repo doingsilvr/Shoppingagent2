@@ -1825,9 +1825,6 @@ def main_chat_interface():
                 )
 
                 st.rerun()
-        else:
-            # explore / comparison / product_detail / purchase_decision 단계 안내
-            st.info("Tip! 종종 탐색단계에서 에이전트가 출력오류로 동일한 질문을 던질 수 있습니다. 그럴 땐 **'추천해줘'**를 입력해주세요!")
 
         # ------------------------------------------------
         # 입력폼
@@ -1885,6 +1882,7 @@ if st.session_state.page == "context_setting":
     context_setting_page()
 else:
     main_chat_interface()
+
 
 
 
